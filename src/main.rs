@@ -1,13 +1,14 @@
 use axum::{
-    response::{Html, IntoResponse},
-    routing::get,
-    Router
+    Router,
+    extract::{DefaultBodyLimit},
 };
-
 use std::{net::SocketAddr, sync::Arc};
-use tera:: {Context,Tera};
+use tera::{Tera};
 use tower_http::services::ServeDir;
 use tracing_subscriber;
+mod routes;
+
+const CONTENT_LIMIT_LENGTH: usize = 20 * 1024 * 1024;
 
 #[tokio::main]
 async fn main() {
@@ -17,13 +18,14 @@ async fn main() {
     let shared_tera = Arc::new(tera);
 
     let app = Router::new()
-        .route("/", get(homepage))
+        .merge(routes::default::routes())
+        .merge(routes::images::routes())
+        .layer(DefaultBodyLimit::max(CONTENT_LIMIT_LENGTH))
         .nest_service("/static", ServeDir::new("static"))
         .with_state(shared_tera);
 
-    let  addr = SocketAddr::from(([127,0,0,1], 3000));
-    println!("Listining on http://{}", addr);
-
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+    println!("Listening on http://{}", addr);
 
     axum_server::bind(addr)
         .serve(app.into_make_service())
@@ -31,8 +33,3 @@ async fn main() {
         .unwrap();
 }
 
-async fn homepage(tera: axum::extract::State<Arc<Tera>>) -> impl IntoResponse{
-    let ctx = Context::new();
-    let rendered = tera.render("index.html",&ctx).unwrap();
-    Html(rendered)
-}

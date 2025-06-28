@@ -1,16 +1,26 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>HTMX Photo Gallery</title>
+    <title>Clixed Gallery</title>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js" integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous"></script> 
     <link rel="stylesheet" href="/static/styles.css">
 </head>
-<body>
-    <h1>📸 Welcome to your Photo Gallery</h1>
-    <div id="gallery">
-        <!-- We'll inject photo thumbnails here with HTMX later -->
-    </div>
+  <form
+      hx-encoding='multipart/form-data' 
+      hx-post='/upload'
+        _='on htmx:xhr:progress(loaded, total) set #progress.value to (loaded/total)*100'>
+    <input type='file' name='file'>
+    <button>
+      Upload
+    </button>
+    <progress id='progress' value='0' max='100'></progress>
+  </form>
+  <div >
+    <img src="/images/2017a567-e835-4af9-a713-e42de07c9303_DSCF6948.JPG"
+>
+  </div>
 </body>
 </html>
 
