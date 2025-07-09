@@ -1,20 +1,16 @@
 use axum::{
-    Router,
-    body::Body,
-    extract::{Multipart, Path},
-    http::{StatusCode, header},
-    response::{IntoResponse, Response},
-    routing::{get, post},
+    body::Body, extract::{Multipart, Path, State}, http::{header, StatusCode}, response::{Html, IntoResponse, Response}, routing::{get, post}, Router
 };
-use std::{io::Write, sync::Arc};
-use tera::Tera;
 use tokio::fs::File;
+use std::{fs, io::Write, sync::Arc};
+use tera::{Context, Tera};
 use tokio_util::io::ReaderStream;
 use uuid::Uuid;
 
 pub fn routes() -> Router<Arc<Tera>> {
     Router::new()
         .route("/upload", post(upload))
+        .route("/images", get(images_home))
         .route("/images/{filename}", get(serve_image))
 }
 
@@ -22,7 +18,6 @@ async fn upload(mut multipart: Multipart) -> impl IntoResponse {
     while let Some(field) = multipart.next_field().await.unwrap() {
         let file_name = field.file_name().unwrap_or("upload.jpg").to_string();
 
-        // 3. Fixed content type validation
         let content_type = field.content_type().map(|s| s.to_string());
         if let Some(ref ct) = content_type {
             if ct != "image/jpeg" {
@@ -39,10 +34,9 @@ async fn upload(mut multipart: Multipart) -> impl IntoResponse {
         let unique_name = format!(
             "images/{}_{}",
             Uuid::new_v4(),
-            sanitize_filename::sanitize(&file_name) // 4. Added sanitization
+            sanitize_filename::sanitize(&file_name) 
         );
 
-        // 5. Proper error handling for directory creation
         if let Err(e) = std::fs::create_dir_all("images") {
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
@@ -50,7 +44,6 @@ async fn upload(mut multipart: Multipart) -> impl IntoResponse {
             );
         }
 
-        // 6. Proper error handling for file operations
         match std::fs::File::create(&unique_name) {
             Ok(mut file) => {
                 if let Err(e) = file.write_all(&data) {
@@ -75,7 +68,35 @@ async fn upload(mut multipart: Multipart) -> impl IntoResponse {
         "No file field found in multipart body".to_string(),
     )
 }
+    
+async fn images_home(State(tera): State<Arc<Tera>>) -> impl IntoResponse {
+    let ctx = Context::new();
+    // 8. Added proper error handling for template rendering
+    match tera.render("home.html", &ctx) {
+        Ok(rendered) => Html(rendered),
+        Err(e) => {
+            tracing::error!("Template error: {}", e);
+            Html(format!("Template error: {}", e).into())
+        }
+    }
+}
+async fn serve_all_images() -> Result<Vec<String>, std::io::Error>
+{
+    let mut images = Vec::new();
+    let entries =   fs::read_dir("images")?;
 
+    for entry in entries{
+       let entry = entry?;
+       let path = entry.path();
+
+       if path.is_file() {
+           if let Some(file_name) = path.file_name().and_then(|s| s.to_str()){
+               images.push(file_name.to_string());
+           }
+       }
+    }   
+    Ok(images)
+}
 async fn serve_image(Path(filename): Path<String>) -> Result<Response, StatusCode> {
     let file_path = format!("./images/{}", filename);
 
