@@ -28,7 +28,7 @@ async fn about(State(tera): State<Arc<Tera>>) -> impl IntoResponse {
 async fn homepage(State(tera): State<Arc<Tera>>) -> impl IntoResponse {
     let ctx = Context::new();
     // 8. Added proper error handling for template rendering
-    match tera.render("index.html", &ctx) {
+    match tera.render("home.html", &ctx) {
         Ok(rendered) => Html(rendered),
         Err(e) => {
             tracing::error!("Template error: {}", e);
