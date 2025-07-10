@@ -12,6 +12,7 @@ pub fn routes() -> Router<Arc<Tera>> {
     Router::new()
         .route("/", get(homepage))
         .route("/about", get(about))
+        .route("/settings", get(settings_page))
 }
 
 async fn about(State(tera): State<Arc<Tera>>) -> impl IntoResponse {
@@ -36,3 +37,14 @@ async fn homepage(State(tera): State<Arc<Tera>>) -> impl IntoResponse {
         }
     }
 }
+
+async fn settings_page(State(tera): State<Arc<Tera>>) -> impl IntoResponse {
+    let ctx = Context::new();
+    match tera.render("settings.html", &ctx) {
+        Ok(rendered) => Html(rendered),
+        Err(e) => {
+            tracing::error!("Template error: {}", e);
+            Html(format!("Template error: {}", e).into())
+        }
+    }
+}   

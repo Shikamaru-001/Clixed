@@ -11,6 +11,7 @@ pub fn routes() -> Router<Arc<Tera>> {
     Router::new()
         .route("/upload", post(upload))
         .route("/images", get(images_home))
+        .route("/gallery", get(serve_image_gallery))
         .route("/images/{filename}", get(serve_image))
 }
 
@@ -118,5 +119,30 @@ async fn serve_image(Path(filename): Path<String>) -> Result<Response, StatusCod
                 .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
         }
         Err(_) => Err(StatusCode::NOT_FOUND),
+    }
+}
+async fn serve_image_gallery() -> Result<Html<String>, StatusCode> {
+    match serve_all_images().await {
+        Ok(images) => {
+            let mut html = String::from(r#"
+                <div id="image-gallery" class="row">
+            "#);
+            
+            for image in images {
+                html.push_str(&format!(r#"
+                    <div class="col-md-6 col-sm-12 col-xl-4">
+                        <img src="/images/{}" alt="{}" class="img-thumbnail" 
+                             onclick="openModal(this.src, this.alt)">
+                        <div class="p-3">
+                            <p class="text-sm text-gray-600 truncate">{}</p>
+                        </div>
+                    </div>
+                "#, image, image, image));
+            }
+            
+            html.push_str("</div>");
+            Ok(Html(html))
+        }
+        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
     }
 }

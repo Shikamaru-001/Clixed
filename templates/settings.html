@@ -1,0 +1,15 @@
+{% extends 'shared.html'%}
+
+{% block content %}
+
+<form
+    hx-encoding='multipart/form-data' 
+    hx-post='/upload'
+    _='on htmx:xhr:progress(loaded, total) set #progress.value to (loaded/total)*100'>
+  <input type='file' name='file'>
+  <button class"form-control">
+    Upload
+  </button>
+  <progress id='progress' value='0' max='100'></progress>
+</form>
+{% endblock %}
