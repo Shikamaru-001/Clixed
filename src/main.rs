@@ -24,7 +24,7 @@ async fn main() {
         .nest_service("/static", ServeDir::new("static"))
         .with_state(shared_tera);
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3001));
     println!("Listening on http://{}", addr);
 
     axum_server::bind(addr)

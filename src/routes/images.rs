@@ -2,10 +2,11 @@ use axum::{
     body::Body, extract::{Multipart, Path, State}, http::{header, StatusCode}, response::{Html, IntoResponse, Response}, routing::{get, post}, Router
 };
 use tokio::fs::File;
-use std::{fs, io::Write, sync::Arc};
+use std::{ fs, io::Write, sync::Arc};
 use tera::{Context, Tera};
 use tokio_util::io::ReaderStream;
 use uuid::Uuid;
+use mozjpeg::{ ColorSpace, Compress};
 
 pub fn routes() -> Router<Arc<Tera>> {
     Router::new()
@@ -31,6 +32,7 @@ async fn upload(mut multipart: Multipart) -> impl IntoResponse {
             return (StatusCode::BAD_REQUEST, "Missing content type".to_string());
         }
         println!("{}", file_name);
+
         let data = field.bytes().await.unwrap();
         let unique_name = format!(
             "images/{}_{}",
@@ -44,27 +46,31 @@ async fn upload(mut multipart: Multipart) -> impl IntoResponse {
                 format!("Failed to create images directory: {}", e),
             );
         }
+        let compressed_image = std::panic::catch_unwind(|| -> std::io::Result<Vec<u8>> {
+            let mut comp = Compress::new(ColorSpace::JCS_RGB);
+            comp.set_size(50, 50);
+            let mut comp = comp.start_compress(data.to_vec())?;
+            let pixels = vec![0u8; 50 * 50 * 3];
+            comp.write_scanlines(&pixels[..])?;
+            let writer = comp.finish()?;
+            Ok(writer)
+        });
 
-        match std::fs::File::create(&unique_name) {
-            Ok(mut file) => {
-                if let Err(e) = file.write_all(&data) {
-                    return (
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                        format!("Failed to write file: {}", e),
-                    );
-                }
-                tracing::info!("File saved '{}' ({} bytes)", unique_name, data.len());
-                return (StatusCode::OK, format!("File saved as {}", unique_name));
+        match compressed_image {
+            Ok(Ok(compressed_data)) => {
+                let output_path = std::path::Path::new(&unique_name);
+                match std::fs::File::create(output_path)
+                    .and_then(|mut file|file.write_all(&compressed_data))
+                    {
+                        Ok(_) => return (StatusCode::OK, format!("file saved as {}", unique_name)),
+                        Err(e) => return (StatusCode::INTERNAL_SERVER_ERROR, format!("failed to save image {}", e)),
+                    }
             }
-            Err(e) => {
-                return (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    format!("Failed to create file: {}", e),
-                );
-            }
+            Ok(Err(e)) => return(StatusCode::INTERNAL_SERVER_ERROR, format!("failed compressing image {}", e)),
+            Err(_) => return(StatusCode::INTERNAL_SERVER_ERROR, format!("Panic!! image compression")),
         }
     }
-    (
+            (
         StatusCode::BAD_REQUEST,
         "No file field found in multipart body".to_string(),
     )
