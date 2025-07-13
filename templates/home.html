@@ -2,12 +2,11 @@
 
 {% block content %}
 <div class="text-center mb-6">
-  <button class="btn btn-primary" 
-          hx-get="/gallery" 
-          hx-target="#gallery-container" 
-          hx-indicator="#loading">
-    Load Images
-  </button>
+  <div hx-get="/gallery" 
+       hx-trigger="load" 
+       hx-target="#gallery-container" 
+       style="display: none;">
+  </div>
 </div>
 
 <div id="loading" class="htmx-indicator text-center">
@@ -16,9 +15,5 @@
 
 <div id="gallery-container">
 </div>
-<div hx-get="/gallery" 
-     hx-trigger="load-images" 
-     hx-target="#gallery-container" 
-     style="display: none;">
-</div>
+
 {% endblock %}

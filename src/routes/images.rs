@@ -19,7 +19,6 @@ pub fn routes() -> Router<Arc<Tera>> {
 async fn upload(mut multipart: Multipart) -> impl IntoResponse {
     while let Some(field) = multipart.next_field().await.unwrap() {
         let file_name = field.file_name().unwrap_or("upload.jpg").to_string();
-
         let content_type = field.content_type().map(|s| s.to_string());
         if let Some(ref ct) = content_type {
             if ct != "image/jpeg" {
@@ -78,7 +77,6 @@ async fn upload(mut multipart: Multipart) -> impl IntoResponse {
     
 async fn images_home(State(tera): State<Arc<Tera>>) -> impl IntoResponse {
     let ctx = Context::new();
-    // 8. Added proper error handling for template rendering
     match tera.render("home.html", &ctx) {
         Ok(rendered) => Html(rendered),
         Err(e) => {
@@ -87,6 +85,7 @@ async fn images_home(State(tera): State<Arc<Tera>>) -> impl IntoResponse {
         }
     }
 }
+
 async fn serve_all_images() -> Result<Vec<String>, std::io::Error>
 {
     let mut images = Vec::new();
@@ -104,6 +103,7 @@ async fn serve_all_images() -> Result<Vec<String>, std::io::Error>
     }   
     Ok(images)
 }
+
 async fn serve_image(Path(filename): Path<String>) -> Result<Response, StatusCode> {
     let file_path = format!("./images/{}", filename);
 
@@ -127,6 +127,7 @@ async fn serve_image(Path(filename): Path<String>) -> Result<Response, StatusCod
         Err(_) => Err(StatusCode::NOT_FOUND),
     }
 }
+
 async fn serve_image_gallery() -> Result<Html<String>, StatusCode> {
     match serve_all_images().await {
         Ok(images) => {
