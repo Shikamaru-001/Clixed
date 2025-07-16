@@ -13,7 +13,7 @@ use tokio::fs::File;
 use tokio_util::io::ReaderStream;
 use uuid::Uuid;
 
-const IMAGE_SIZE: usize = 40;
+const IMAGE_SIZE: usize = 8;
 
 pub fn routes() -> Router<Arc<Tera>> {
     Router::new()
@@ -159,21 +159,21 @@ async fn serve_image_gallery() -> Result<Html<String>, StatusCode> {
             "#,
             );
 
-            for image in images {
+            for (index, image) in images.iter().enumerate() {
                 html.push_str(&format!(
-                    r#"
-                    <div class="col-md-6 col-sm-12 col-xl-4">
-                        <img src="/images/{}" alt="{}" class="img-thumbnail" 
-                             onclick="openModal(this.src, this.alt)">
+                    r##"
+                    <div id="image_{1}" class="col-md-6 col-sm-12 col-xl-4">
+                        <img src="/images/{0}" alt="{0}" class="img-thumbnail"/>
                         <div class="p-3">
-                            <p class="text-sm text-gray-600 truncate">{}</p>
+                            <p class="text-sm text-gray-600 truncate">{0}</p>
                         </div>
+                            <button type="button" class="btn btn-danger" hx-delete="/image/{0}" hx-target="#image_{1}">Delete</button>
                     </div>
-                "#,
-                    image, image, image
-                ));
+                "##,
+                    image,
+                    index
+                    ));
             }
-
             html.push_str("</div>");
             Ok(Html(html))
         }
@@ -184,7 +184,11 @@ async fn serve_image_gallery() -> Result<Html<String>, StatusCode> {
 async fn delete_image(Path(filename): Path<String>) -> Result<Html<String>, StatusCode> {
     let file_path = format!("./images/{}", filename);
     match std::fs::remove_file(file_path) {
-        Ok(_) => todo!(),
-        Err(_) => todo!(),
+        Ok(_) => {
+            Ok(Html(String::from("")))
+        }
+        Err(_) => {
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        },
     }
 }
