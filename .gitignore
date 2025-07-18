@@ -1,2 +1,6 @@
-/target
+#Rust Stuff
+/target/
 /images
+
+#Environment Variables
+.env
