@@ -17,11 +17,11 @@ const IMAGE_SIZE: usize = 8;
 
 pub fn routes() -> Router<Arc<Tera>> {
     Router::new()
+        .route("/image/{filename}", get(serve_image))
         .route("/image/{filename}", delete(delete_image))
         .route("/upload", post(upload))
         .route("/images", get(images_home))
         .route("/gallery", get(serve_image_gallery))
-        .route("/images/{filename}", get(serve_image))
 }
 
 async fn upload(mut multipart: Multipart) -> impl IntoResponse {
@@ -163,7 +163,7 @@ async fn serve_image_gallery() -> Result<Html<String>, StatusCode> {
                 html.push_str(&format!(
                     r##"
                     <div id="image_{1}" class="col-md-6 col-sm-12 col-xl-4">
-                        <img src="/images/{0}" alt="{0}" class="img-thumbnail"/>
+                        <img src="/image/{0}" alt="{0}" class="img-thumbnail"/>
                         <div class="p-3">
                             <p class="text-sm text-gray-600 truncate">{0}</p>
                         </div>
