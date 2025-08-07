@@ -1,8 +1,39 @@
+html, body {
+    background-color: #fdf5e6 !important;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+} 
+
+body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex-grow: 1;
+    padding: 20px;
+    background-color: #fdf5e6 !important;
+    display: flex;
+    flex-direction: column;
+}    
+
+nav {
+    background-color: #fdf5e6 !important;
+}
+
 .navbar-brand {
     font-family: "Oooh Baby", cursive;
     font-style: normal;
     font-weight: bold;
     font-size: 48px !important;
+    margin-left: 30px;
  }
 
  .nav-link {
@@ -11,5 +42,58 @@
     font-style: italic;
     font-size: 15px !important;
     color: #000 !important;
+    margin-right: 5px;
+    transition: transform 0.3s ease;
 }
  
+.nav-link:hover {
+    transform: scale(1.1);
+}
+
+.social-icon {
+    width: 25px;
+    height: auto;
+    transition: transform 300ms ease; /* Transition for the hover effect */
+    }
+
+.social-icon:hover {
+    transform: scale(1.1); /* Enlarge on hover */
+}
+
+.contact-section {
+    max-width: 600px;
+    margin: 0 auto; /* This will center the section on the page */
+    padding: 20px;
+    text-align: center; /* This will center your text */
+    font-family: "Cormorant Garamond", serif; /* Use the same font as the navbar */
+    font-weight: 400; /* Use a normal font weight */
+}
+
+.contact-section h1 {
+    margin-bottom: 15px; /* Adjust this value to increase or decrease the spacing */
+    font-style: italic; /* Use italic style for the text */
+    font-size: 48px; /* Adjust the font size as needed */
+}
+
+.contact-section p {
+    font-size: 24px; /* Adjust the font size as needed */
+    font-style: normal;
+}
+
+.feedback-section {
+    margin-top: auto; /* This will center the section on the page */
+    text-align: center; /* This will center your text */
+    padding: 10px;
+    background-color: #fdf5e6 !important;
+    border-top: 1px solid #ccc; /* Optional: Add a top border for separation */
+    flex-shrink: 0; /* Prevent the section from shrinking */
+    font-family: "Cormorant Garamond", serif; /* Use the same font as the navbar */
+    font-weight: 400; /* Use a normal font weight */
+    font-size: 12px; /* Adjust the font size as needed */
+}
+
+#content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
