@@ -1,9 +1,9 @@
 use axum::{
     Router,
-    extract::{DefaultBodyLimit},
+    extract::DefaultBodyLimit,
 };
 use std::{net::SocketAddr, sync::Arc};
-use tera::{Tera};
+use tera::Tera;
 use tower_http::services::ServeDir;
 use tracing_subscriber;
 mod routes;
