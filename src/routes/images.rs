@@ -8,14 +8,16 @@ use axum::{
 };
 use mozjpeg::{ColorSpace, Compress};
 use std::{fs, io::Write, sync::Arc};
-use tera::{Context, Tera};
+use tera::Context;
 use tokio::fs::File;
 use tokio_util::io::ReaderStream;
 use uuid::Uuid;
 
+use crate::AppState;
+
 const IMAGE_SIZE: usize = 8;
 
-pub fn routes() -> Router<Arc<Tera>> {
+pub fn routes() -> Router<Arc<AppState>> {
     Router::new()
         .route("/image/{filename}", get(serve_image))
         .route("/image/{filename}", delete(delete_image))
@@ -98,9 +100,9 @@ async fn upload(mut multipart: Multipart) -> impl IntoResponse {
     )
 }
 
-async fn images_home(State(tera): State<Arc<Tera>>) -> impl IntoResponse {
+async fn images_home(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     let ctx = Context::new();
-    match tera.render("home.html", &ctx) {
+    match state.tera.render("home.html", &ctx) {
         Ok(rendered) => Html(rendered),
         Err(e) => {
             tracing::error!("Template error: {}", e);

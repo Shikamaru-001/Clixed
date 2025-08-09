@@ -6,9 +6,10 @@ use axum::{
     response::{Html, IntoResponse},
     routing::get,
 };
-use tera::{Context, Tera};
+use tera::Context;
+use crate::AppState;
 
-pub fn routes() -> Router<Arc<Tera>> {
+pub fn routes() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", get(homepage))
         .route("/about", get(about))
@@ -16,9 +17,9 @@ pub fn routes() -> Router<Arc<Tera>> {
         .route("/contact", get(contact_page))
 }
 
-async fn about(State(tera): State<Arc<Tera>>) -> impl IntoResponse {
+async fn about(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     let ctx = Context::new();
-    match tera.render("about.html", &ctx) {
+    match state.tera.render("about.html", &ctx) {
         Ok(rendered) => Html(rendered),
         Err(e) => {
             tracing::error!("About.Html Template error: {}", e);
@@ -26,11 +27,10 @@ async fn about(State(tera): State<Arc<Tera>>) -> impl IntoResponse {
         }
     }
 }
-// 7. Fixed state extraction using proper State extractor
-async fn homepage(State(tera): State<Arc<Tera>>) -> impl IntoResponse {
+
+async fn homepage(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     let ctx = Context::new();
-    // 8. Added proper error handling for template rendering
-    match tera.render("home.html", &ctx) {
+    match state.tera.render("home.html", &ctx) {
         Ok(rendered) => Html(rendered),
         Err(e) => {
             tracing::error!("Template error: {}", e);
@@ -39,9 +39,9 @@ async fn homepage(State(tera): State<Arc<Tera>>) -> impl IntoResponse {
     }
 }
 
-async fn settings_page(State(tera): State<Arc<Tera>>) -> impl IntoResponse {
+async fn settings_page(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     let ctx = Context::new();
-    match tera.render("settings.html", &ctx) {
+    match state.tera.render("settings.html", &ctx) {
         Ok(rendered) => Html(rendered),
         Err(e) => {
             tracing::error!("Template error: {}", e);
@@ -50,9 +50,9 @@ async fn settings_page(State(tera): State<Arc<Tera>>) -> impl IntoResponse {
     }
 }   
 
-async fn contact_page(State(tera): State<Arc<Tera>>) -> impl IntoResponse {
+async fn contact_page(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     let ctx = Context::new();
-    match tera.render("contact.html", &ctx) {
+    match state.tera.render("contact.html", &ctx) {
         Ok(rendered) => Html(rendered),
         Err(e) => {
             tracing::error!("Contact.Html Template error: {}", e);
