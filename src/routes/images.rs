@@ -27,9 +27,16 @@ pub fn routes() -> Router<Arc<AppState>> {
 }
 
 async fn upload(mut multipart: Multipart) -> impl IntoResponse {
+    let mut title: Option<String> = None;
+    let mut imageData: Option<Vec<u8>> = None;
+
+
     while let Some(field) = multipart.next_field().await.unwrap() {
         let file_name = field.file_name().unwrap_or("upload.jpg").to_string();
         let content_type = field.content_type().map(|s| s.to_string());
+        match field.name().unwrap_or("").to_string().as_str(){
+
+        }
         if let Some(ref ct) = content_type {
             if ct != "image/jpeg" {
                 return (
